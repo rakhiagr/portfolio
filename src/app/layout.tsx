@@ -21,8 +21,11 @@ const personSchema = {
     addressCountry: "CA",
   },
   email: `mailto:${contact.email}`,
-  url: "https://rakhi.vercel.app",
-  sameAs: contact.socials.map((s) => s.href),
+  url: "https://rakhi-agrawal.vercel.app",
+  // Professional identity signals only — Instagram is personal.
+  sameAs: contact.socials
+    .filter((s) => s.label === "LinkedIn" || s.label === "GitHub")
+    .map((s) => s.href),
   alumniOf: [
     {
       "@type": "CollegeOrUniversity",
@@ -68,7 +71,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rakhi.vercel.app"),
+  metadataBase: new URL("https://rakhi-agrawal.vercel.app"),
   title: {
     default: "Rakhi Agrawal — Software Engineer",
     template: "%s · Rakhi Agrawal",

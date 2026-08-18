@@ -1,9 +1,8 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://rakhi.vercel.app";
-  const now = new Date();
+  const base = "https://rakhi-agrawal.vercel.app";
   return [
-    { url: base, lastModified: now, changeFrequency: "monthly", priority: 1 },
+    { url: base, changeFrequency: "monthly", priority: 1 },
   ];
 }

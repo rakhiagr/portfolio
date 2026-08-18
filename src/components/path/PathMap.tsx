@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   ComposableMap,
   Geographies,
@@ -56,10 +56,19 @@ const TOTAL_KM = stops.reduce((sum, s, i) => {
   return sum + d;
 }, 0);
 
+// Years spanned = today − earliest dated stop (Patna has no start; skip it).
+function computeYears(): number {
+  const firstDated = stops.find((s) => s.start);
+  if (!firstDated?.start) return 0;
+  const [y, m] = firstDated.start.split("-").map(Number);
+  const start = new Date(y, (m ?? 1) - 1).getTime();
+  return Math.max(1, Math.round((Date.now() - start) / (365.25 * 24 * 3600 * 1000)));
+}
+
 export const PATH_STATS = {
   countries: new Set(stops.map((s) => s.countryCode)).size,
   cities: stops.length,
-  years: 11,
+  years: computeYears(),
   km: Math.round(TOTAL_KM),
 } as const;
 
@@ -74,15 +83,20 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
   const [autoplayed, setAutoplayed] = useState(false);
   const [started, setStarted] = useState(false);
   const reducedMotion = useReducedMotion();
+  const arcId = useId();
 
   const N = stops.length;
+  // Defensive clamp — if a parent passes a stale/out-of-range index, don't crash.
+  const safeIndex = Math.max(0, Math.min(N - 1, activeIndex));
 
-  // Reduced motion: jump straight to the final state and never autoplay.
+  // Reduced motion: jump straight to the final state on mount only, then let
+  // the user drive from the legend without the effect fighting their input.
   useEffect(() => {
     if (!reducedMotion) return;
-    if (activeIndex !== N - 1) onActiveChange(N - 1);
+    onActiveChange(N - 1);
     setAutoplayed(true);
-  }, [reducedMotion, activeIndex, N, onActiveChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reducedMotion]);
 
   // Kick off the animation once the map enters the viewport (non-reduced only).
   useEffect(() => {
@@ -104,16 +118,16 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
 
   useEffect(() => {
     if (reducedMotion || !started || autoplayed) return;
-    if (activeIndex >= N - 1) {
+    if (safeIndex >= N - 1) {
       setAutoplayed(true);
       return;
     }
     const t = setTimeout(
-      () => onActiveChange(Math.min(N - 1, activeIndex + 1)),
+      () => onActiveChange(Math.min(N - 1, safeIndex + 1)),
       REVEAL_INTERVAL_MS,
     );
     return () => clearTimeout(t);
-  }, [started, autoplayed, activeIndex, onActiveChange, N, reducedMotion]);
+  }, [started, autoplayed, safeIndex, onActiveChange, N, reducedMotion]);
 
   // Project stop coordinates once for arc/label math.
   const projected = useMemo(
@@ -165,12 +179,13 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
         {projected.slice(0, -1).map((a, i) => {
           const b = projected[i + 1];
           const d = arcPath(a.xy, b.xy);
-          const revealed = i < activeIndex;
-          const drawing = i === activeIndex - 1;
+          const revealed = i < safeIndex;
+          const drawing = i === safeIndex - 1;
+          const pathId = `${arcId}-arc-${i}`;
           return (
             <g key={`arc-${i}`}>
               <path
-                id={`arc-path-${i}`}
+                id={pathId}
                 d={d}
                 fill="none"
                 stroke="var(--signal)"
@@ -186,9 +201,9 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
                 }}
               />
               {/* Traveling packet — only mounts while this arc is drawing.
-                  key on activeIndex forces remount → fresh animation. */}
+                  key on safeIndex forces remount → fresh animation. */}
               {drawing && (
-                <g key={`packet-${activeIndex}`}>
+                <g key={`packet-${safeIndex}`}>
                   <circle r={5.5} fill="var(--signal)" opacity={0.28}>
                     <animateMotion
                       dur="900ms"
@@ -197,7 +212,7 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
                       keySplines="0.32 0.72 0 1"
                       keyTimes="0;1"
                     >
-                      <mpath href={`#arc-path-${i}`} />
+                      <mpath href={`#${pathId}`} />
                     </animateMotion>
                   </circle>
                   <circle r={2.6} fill="var(--signal)">
@@ -208,7 +223,7 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
                       keySplines="0.32 0.72 0 1"
                       keyTimes="0;1"
                     >
-                      <mpath href={`#arc-path-${i}`} />
+                      <mpath href={`#${pathId}`} />
                     </animateMotion>
                   </circle>
                 </g>
@@ -219,9 +234,9 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
 
         {/* Pins */}
         {stops.map((s, i) => {
-          const isRevealed = i <= activeIndex;
-          const isActive = i === activeIndex;
-          const isCurrent = i === N - 1 && activeIndex === N - 1;
+          const isRevealed = i <= safeIndex;
+          const isActive = i === safeIndex;
+          const isCurrent = i === N - 1 && safeIndex === N - 1;
           const isPast = isRevealed && !isActive && !isCurrent;
 
           // Pin size hierarchy: current > active > past
@@ -255,7 +270,7 @@ export function PathMap({ activeIndex, onActiveChange }: Props) {
                   {isCurrent && !reducedMotion && (
                     <animate
                       attributeName="r"
-                      values="14;26;14"
+                      values="18;26;18"
                       dur="3s"
                       repeatCount="indefinite"
                     />

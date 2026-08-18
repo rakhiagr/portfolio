@@ -52,7 +52,7 @@ export function TopNav() {
           className="rounded-full px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-paper transition hover:text-signal"
           aria-label="Home"
         >
-          <span className="signal-dot mr-2" />
+          <span className="signal-dot mr-2" aria-hidden />
           RA
         </a>
         <span className="hidden h-4 w-px bg-edge md:inline-block" aria-hidden />
@@ -62,7 +62,7 @@ export function TopNav() {
             <a
               key={it.id}
               href={`#${it.id}`}
-              aria-current={isActive ? "location" : undefined}
+              aria-current={isActive ? "true" : undefined}
               className={
                 "hidden rounded-full px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] transition md:inline-block " +
                 (isActive

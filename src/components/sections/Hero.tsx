@@ -14,7 +14,7 @@ export function Hero() {
       />
       <div className="relative z-10 mx-auto w-full max-w-6xl px-6 pb-20 pt-40 md:pb-28">
         <p className="eyebrow mb-6">
-          <span className="signal-dot mr-3 align-middle" />
+          <span className="signal-dot mr-3 align-middle" aria-hidden />
           Software Engineer · Distributed Systems
         </p>
         <h1 className="font-display text-display-xl font-normal leading-[0.95] tracking-tight text-paper">

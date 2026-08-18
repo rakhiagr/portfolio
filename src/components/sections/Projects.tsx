@@ -81,15 +81,6 @@ function ProjectCard({
               </li>
             ))}
           </ul>
-          {project.metrics && project.metrics.length > 0 && (
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.2em] text-muted">
-              {project.metrics.map((m) => (
-                <span key={m} className="whitespace-nowrap">
-                  {m}
-                </span>
-              ))}
-            </div>
-          )}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
             <ul className="flex flex-wrap gap-1.5">
               {project.stack.map((s) => (

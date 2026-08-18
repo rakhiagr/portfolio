@@ -12,7 +12,6 @@ export type Coursework = {
   id: string;
   name: string;
   term: string;
-  role: string;
   summary: string;
   stack: string[];
   outcomes: string[];
@@ -70,7 +69,6 @@ export const schools: School[] = [
         id: "geo-spatial-taxi",
         name: "Geo-Spatial Hotspot Analysis",
         term: "Spring 2021 · Data Processing at Scale",
-        role: "Distributed systems engineer",
         summary:
           "Distributed Spark application performing spatial-temporal analysis on NYC yellow-cab pickup and drop-off data to surface statistically significant hotspots.",
         stack: ["Apache Spark", "SparkSQL", "Scala", "AWS EC2"],
@@ -83,7 +81,6 @@ export const schools: School[] = [
         id: "auto-scaling-inference",
         name: "Auto-Scaling Distributed Inference Pipeline",
         term: "Spring 2022 · Cloud Computing",
-        role: "Systems engineer",
         summary:
           "Distributed, fault-tolerant inference pipeline on AWS with an auto-scaler that provisions worker instances based on SQS queue depth. Demonstrated on a facial-recognition workload.",
         stack: ["AWS EC2", "AWS SQS", "AWS S3", "Python"],

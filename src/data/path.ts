@@ -100,12 +100,3 @@ export const stops: PathStop[] = [
   },
 ];
 
-export type PathPhoto = {
-  src: string;
-  alt: string;
-  caption: string;
-  kind: "place" | "moment" | "aesthetic";
-  href: string;
-};
-
-export const pathPhotos: PathPhoto[] = [];

@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
       },
     ],
-    sitemap: "https://rakhi.vercel.app/sitemap.xml",
+    sitemap: "https://rakhi-agrawal.vercel.app/sitemap.xml",
   };
 }

@@ -4,7 +4,6 @@ export const contact = {
   role: "Software Engineer",
   location: "Toronto, ON",
   email: "rakhiagr2020@gmail.com",
-  phone: "+1 602-503-9868",
   // About-section headshot. Set to null to fall back to the RA monogram.
   photoHref: "/rakhi.png" as string | null,
   // Fine-tuning for portrait cropping and palette treatment.

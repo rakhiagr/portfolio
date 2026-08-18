@@ -58,7 +58,6 @@ export function Contact() {
                 icon={FileDown}
                 href={contact.resumeHref}
                 download
-                indicatorIcon={FileDown}
               />
               {contact.socials.map((s) => {
                 const Icon = SOCIAL_ICONS[s.label];
@@ -141,12 +140,9 @@ type ContactCardProps = {
   label: string;
   value: string;
   icon: CardIcon;
-  href?: string;
+  href: string;
   external?: boolean;
   download?: boolean;
-  onClick?: () => void;
-  indicator?: string;
-  indicatorIcon?: CardIcon;
 };
 
 function ContactCard({
@@ -156,30 +152,25 @@ function ContactCard({
   href,
   external,
   download,
-  onClick,
-  indicator,
-  indicatorIcon: IndicatorIcon,
 }: ContactCardProps) {
   const baseClass =
     "group relative flex flex-col gap-2 bg-surface p-6 text-left transition-colors duration-200 hover:bg-ink focus-visible:bg-ink";
+  const isExternal = external === true;
+  const IndicatorIcon = download ? FileDown : ArrowUpRight;
 
-  const inner = (
-    <>
-      {/* Top-right indicator */}
+  return (
+    <a
+      href={href}
+      {...(download ? { download: "" } : {})}
+      {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
+      aria-label={`${label}: ${value}${isExternal ? " (opens in new tab)" : ""}`}
+      className={baseClass}
+    >
       <span
         aria-hidden
-        className={
-          "pointer-events-none absolute right-4 top-4 flex items-center gap-1 font-mono text-[0.6875rem] uppercase tracking-widest transition " +
-          (indicator ? "text-signal opacity-100" : "text-signal opacity-0 group-hover:opacity-100")
-        }
+        className="pointer-events-none absolute right-4 top-4 flex items-center gap-1 font-mono text-[0.6875rem] uppercase tracking-widest text-signal opacity-0 transition group-hover:opacity-100"
       >
-        {indicator ? (
-          <span>{indicator}</span>
-        ) : IndicatorIcon ? (
-          <IndicatorIcon size={12} />
-        ) : (
-          <ArrowUpRight size={12} strokeWidth={2} />
-        )}
+        <IndicatorIcon size={12} strokeWidth={2} />
       </span>
       <div className="flex items-center gap-2">
         <Icon
@@ -191,32 +182,6 @@ function ContactCard({
       <p className="break-all font-mono text-[0.8125rem] leading-tight text-paper transition-colors duration-200 group-hover:text-signal">
         {value}
       </p>
-    </>
-  );
-
-  if (href) {
-    const isExternal = external === true;
-    return (
-      <a
-        href={href}
-        {...(download ? { download: "" } : {})}
-        {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
-        {...(download && !isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
-        aria-label={`${label}: ${value}${isExternal ? " (opens in new tab)" : ""}`}
-        className={baseClass}
-      >
-        {inner}
-      </a>
-    );
-  }
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={indicator ? `${label} ${indicator}` : `${label}: copy ${value}`}
-      className={baseClass}
-    >
-      {inner}
-    </button>
+    </a>
   );
 }

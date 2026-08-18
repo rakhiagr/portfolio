@@ -14,7 +14,6 @@ export type Role = {
   location: string;
   start: string;
   end: string | "Present";
-  href?: string;
   summary?: string;
   highlights?: Highlight[];
   bullets?: string[];
@@ -28,7 +27,6 @@ export const roles: Role[] = [
     location: "Mountain View, CA → Toronto, ON",
     start: "2023-01",
     end: "2026-06",
-    href: "https://linkedin.com",
     summary:
       "Built backend and platform infrastructure for LinkedIn's metadata ecosystem, powering data discovery, governance, and compliance across the company's data lake.",
     highlights: [
@@ -113,11 +111,3 @@ export const roles: Role[] = [
     ],
   },
 ];
-
-export const education = {
-  degree: "M.S. in Computer Science",
-  school: "Arizona State University",
-  gpa: "4.0 / 4.0",
-  start: "2021-01",
-  end: "2022-12",
-};

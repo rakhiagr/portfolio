@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 type Item = { label: string; id: string };
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 export function MobileMenu({ items }: { items: Item[] }) {
   const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  // Lock scroll when open
+  // Lock scroll when open (save/restore prior overflow value)
   useEffect(() => {
     if (!open) return;
     const prev = document.documentElement.style.overflow;
@@ -18,19 +23,39 @@ export function MobileMenu({ items }: { items: Item[] }) {
     };
   }, [open]);
 
-  // Escape to close
+  // Escape to close + focus trap + focus restore
   useEffect(() => {
     if (!open) return;
+    const trigger = triggerRef.current;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+      } else if (e.key === "Tab" && dialogRef.current) {
+        const focusables = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (e.shiftKey && activeEl === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && activeEl === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      trigger?.focus?.();
+    };
   }, [open]);
 
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open navigation menu"
@@ -43,6 +68,7 @@ export function MobileMenu({ items }: { items: Item[] }) {
 
       {open && (
         <div
+          ref={dialogRef}
           id="mobile-nav"
           role="dialog"
           aria-modal="true"
@@ -60,7 +86,7 @@ export function MobileMenu({ items }: { items: Item[] }) {
           <div className="relative mx-auto mt-16 max-w-md rounded-2xl border border-edge bg-surface shadow-[0_40px_80px_rgba(0,0,0,0.6)]">
             <div className="flex items-center justify-between border-b border-edge px-5 py-4">
               <p className="eyebrow">
-                <span className="signal-dot mr-2" /> Navigation
+                <span className="signal-dot mr-2" aria-hidden /> Navigation
               </p>
               <button
                 type="button"
@@ -81,7 +107,7 @@ export function MobileMenu({ items }: { items: Item[] }) {
                   >
                     <span className="flex items-baseline gap-3">
                       <span className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-muted">
-                        0{i + 1}
+                        {String(i + 1).padStart(2, "0")}
                       </span>
                       <span className="font-display text-[1.375rem] leading-none">
                         {it.label}

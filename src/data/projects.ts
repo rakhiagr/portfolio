@@ -14,8 +14,6 @@ export type Project = {
   summary: string;
   stack: string[];
   outcomes: Outcome[];
-  /** Small mono chip line above the stack — for compressed extra signals. */
-  metrics?: string[];
   links?: { label: string; href: string }[];
   // Position in the WebGL system-graph (normalized -1..1)
   node: { x: number; y: number };

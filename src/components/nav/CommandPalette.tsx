@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { contact } from "@/data/contact";
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 type Action = {
   id: string;
   label: string;
@@ -18,7 +21,7 @@ const SECTION_ITEMS: Array<{ id: string; label: string; hint: string }> = [
   { id: "experience", label: "Experience", hint: "LinkedIn + earlier roles" },
   { id: "path", label: "The Path", hint: "Cities, timeline, journey" },
   { id: "education", label: "Education", hint: "ASU, publications, coursework" },
-  { id: "projects", label: "Projects", hint: "Expense Tracker, GymPal" },
+  { id: "projects", label: "Projects", hint: "Expenses, GymPal" },
   { id: "skills", label: "Skills", hint: "Languages, systems, tools" },
   { id: "contact", label: "Contact", hint: "Email, LinkedIn, GitHub" },
 ];
@@ -38,11 +41,11 @@ export function CommandPalette() {
     const external = (href: string) => () => {
       window.open(href, "_blank", "noreferrer");
     };
-    const copyText = (text: string) => async () => {
+    const copyEmail = () => async () => {
       try {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(contact.email);
       } catch {
-        window.location.href = `mailto:${text}`;
+        window.location.href = `mailto:${contact.email}`;
       }
     };
     const download = (href: string) => () => {
@@ -69,7 +72,7 @@ export function CommandPalette() {
         label: "Copy email address",
         hint: contact.email,
         keywords: "copy email address mail message contact",
-        run: copyText(contact.email),
+        run: copyEmail(),
         kind: "action" as const,
       },
       {
@@ -122,6 +125,9 @@ export function CommandPalette() {
     return () => window.removeEventListener("open-command-palette", onOpen);
   }, []);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+
   // Global keydown handler
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -149,22 +155,38 @@ export function CommandPalette() {
           setOpen(false);
           setQuery("");
         }
+      } else if (e.key === "Tab" && dialogRef.current) {
+        const focusables = dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const activeEl = document.activeElement as HTMLElement | null;
+        if (e.shiftKey && activeEl === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && activeEl === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, results, active]);
 
-  // Focus input when opened; lock body scroll
+  // Focus input when opened; lock body scroll (save/restore prior value);
+  // restore focus to the trigger on close.
   useEffect(() => {
-    if (open) {
-      const t = setTimeout(() => inputRef.current?.focus(), 0);
-      document.documentElement.style.overflow = "hidden";
-      return () => {
-        clearTimeout(t);
-        document.documentElement.style.overflow = "";
-      };
-    }
+    if (!open) return;
+    returnFocusRef.current = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const t = setTimeout(() => inputRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(t);
+      document.documentElement.style.overflow = prevOverflow;
+      returnFocusRef.current?.focus?.();
+    };
   }, [open]);
 
   // Keep active item in view
@@ -178,6 +200,7 @@ export function CommandPalette() {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-label="Command palette"

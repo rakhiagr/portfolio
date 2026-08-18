@@ -9,7 +9,7 @@ export function FilmGrain() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[60]"
+      className="pointer-events-none fixed inset-0 z-30"
       style={{
         backgroundImage: uri,
         backgroundRepeat: "repeat",

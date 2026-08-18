@@ -19,7 +19,7 @@ export default function NotFound() {
       />
       <div className="relative z-10 max-w-2xl text-center">
         <p className="eyebrow mb-8">
-          <span className="signal-dot mr-2" />
+          <span className="signal-dot mr-2" aria-hidden />
           Status 404 · packet lost
         </p>
         <h1 className="font-display text-display-xl leading-[0.95] tracking-tight text-paper">
